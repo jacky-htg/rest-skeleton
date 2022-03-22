@@ -1,6 +1,8 @@
 package request
 
-import "rest/models"
+import (
+	"rest/models"
+)
 
 // NewUserRequest : format json request for new user
 type NewUserRequest struct {
@@ -18,4 +20,18 @@ func (u *NewUserRequest) Transform() *models.User {
 	user.Password = u.Password
 
 	return &user
+}
+
+type UserRequest struct {
+	ID       uint `json:"id"`
+	IsActive bool `json:"is_active"`
+}
+
+// Transform UserRequest to User
+func (u *UserRequest) Transform(user *models.User) *models.User {
+	if u.ID == user.ID {
+		user.IsActive = u.IsActive
+	}
+
+	return user
 }
