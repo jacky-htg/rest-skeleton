@@ -32,9 +32,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userRequest := new(request.UserRequest)
-	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&userRequest)
-	if err != nil {
+	if err := api.Decode(r, &userRequest); err != nil {
 		u.Log.Printf("error decode user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

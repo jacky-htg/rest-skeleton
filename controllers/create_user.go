@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"rest/libraries/api"
 	"rest/payloads/request"
 	"rest/payloads/response"
 
@@ -14,16 +15,14 @@ import (
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var userRequest request.NewUserRequest
 
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&userRequest)
-	if err != nil {
+	if err := api.Decode(r, &userRequest); err != nil {
 		u.Log.Printf("error decode user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if userRequest.Password != userRequest.RePassword {
-		err = fmt.Errorf("Password not match")
+		err := fmt.Errorf("Password not match")
 		u.Log.Printf("error : %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -42,8 +41,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	user.Db = u.Db
 	user.Log = u.Log
 
-	err = user.Create()
-	if err != nil {
+	if err := user.Create(); err != nil {
 		u.Log.Printf("error call create user: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
