@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
+	"rest/libraries/api"
 	"rest/models"
 	"rest/payloads/response"
 )
@@ -16,7 +16,7 @@ func (u *Users) List(w http.ResponseWriter, r *http.Request) {
 
 	list, err := user.List()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
@@ -27,16 +27,9 @@ func (u *Users) List(w http.ResponseWriter, r *http.Request) {
 		responseList = append(responseList, res)
 	}
 
-	data, err := json.Marshal(responseList)
-	if err != nil {
-		u.Log.Println("error marshalling result", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	if err := api.ResponseOK(w, responseList, http.StatusOK); err != nil {
+		u.Log.Println(err)
+		api.ResponseError(w, err)
 		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(data); err != nil {
-		u.Log.Println("error writing result", err)
 	}
 }

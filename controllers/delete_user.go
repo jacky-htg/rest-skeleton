@@ -15,7 +15,7 @@ func (u *Users) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(paramID)
 	if err != nil {
 		u.Log.Println("convert param to id", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
@@ -25,16 +25,17 @@ func (u *Users) Delete(w http.ResponseWriter, r *http.Request) {
 	user.ID = uint(id)
 	err = user.Get()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
 	err = user.Delete()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusNoContent)
+	//w.WriteHeader(http.StatusNoContent)
+	api.ResponseOK(w, nil, http.StatusOK)
 }

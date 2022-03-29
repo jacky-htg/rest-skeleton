@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"rest/libraries/api"
@@ -17,21 +16,21 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := api.Decode(r, &userRequest); err != nil {
 		u.Log.Printf("error decode user: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
 	if userRequest.Password != userRequest.RePassword {
-		err := fmt.Errorf("Password not match")
+		err := api.ErrBadRequest(fmt.Errorf("Password not match"), "")
 		u.Log.Printf("error : %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
 	pass, err := bcrypt.GenerateFromPassword([]byte(userRequest.Password), bcrypt.DefaultCost)
 	if err != nil {
 		u.Log.Printf("error generate password: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
@@ -43,22 +42,15 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := user.Create(); err != nil {
 		u.Log.Printf("error call create user: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.ResponseError(w, err)
 		return
 	}
 
 	var res response.UserResponse
 	res.Transform(*user)
-	data, err := json.Marshal(res)
-	if err != nil {
-		u.Log.Println("error marshalling result", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	if err := api.ResponseOK(w, res, http.StatusCreated); err != nil {
+		u.Log.Println(err)
+		api.ResponseError(w, err)
 		return
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write(data); err != nil {
-		u.Log.Println("error writing result", err)
 	}
 }
