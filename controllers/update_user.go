@@ -12,7 +12,8 @@ import (
 )
 
 func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
-	paramID := r.Context().Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
+	ctx := r.Context()
+	paramID := ctx.Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
 	id, err := strconv.Atoi(paramID)
 	if err != nil {
 		u.Log.Println("convert param to id", err)
@@ -25,13 +26,13 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	user.Log = u.Log
 	user.ID = uint(id)
 
-	if err = user.Get(); err != nil {
+	if err = user.Get(ctx); err != nil {
 		api.ResponseError(w, err)
 		return
 	}
 
 	userRequest := new(request.UserRequest)
-	if err := api.Decode(r, &userRequest); err != nil {
+	if err := api.Decode(r, &userRequest, true); err != nil {
 		u.Log.Printf("error decode user: %s", err)
 		api.ResponseError(w, err)
 		return
@@ -40,7 +41,7 @@ func (u *Users) Update(w http.ResponseWriter, r *http.Request) {
 	userUpdate := userRequest.Transform(user)
 	userUpdate.Db = u.Db
 	userUpdate.Log = u.Log
-	if err = userUpdate.Update(); err != nil {
+	if err = userUpdate.Update(ctx); err != nil {
 		api.ResponseError(w, err)
 		return
 	}

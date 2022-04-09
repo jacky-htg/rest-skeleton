@@ -9,12 +9,12 @@ import (
 
 // ListUsers : http handler for returning list of users
 func (u *Users) List(w http.ResponseWriter, r *http.Request) {
-
+	ctx := r.Context()
 	var user models.User
 	user.Db = u.Db
 	user.Log = u.Log
 
-	list, err := user.List()
+	list, err := user.List(ctx)
 	if err != nil {
 		api.ResponseError(w, err)
 		return

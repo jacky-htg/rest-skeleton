@@ -11,7 +11,8 @@ import (
 
 // Delete user by id
 func (u *Users) Delete(w http.ResponseWriter, r *http.Request) {
-	paramID := r.Context().Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
+	ctx := r.Context()
+	paramID := ctx.Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
 	id, err := strconv.Atoi(paramID)
 	if err != nil {
 		u.Log.Println("convert param to id", err)
@@ -23,13 +24,13 @@ func (u *Users) Delete(w http.ResponseWriter, r *http.Request) {
 	user.Db = u.Db
 	user.Log = u.Log
 	user.ID = uint(id)
-	err = user.Get()
+	err = user.Get(ctx)
 	if err != nil {
 		api.ResponseError(w, err)
 		return
 	}
 
-	err = user.Delete()
+	err = user.Delete(ctx)
 	if err != nil {
 		api.ResponseError(w, err)
 		return

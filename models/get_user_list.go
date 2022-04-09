@@ -1,12 +1,14 @@
 package models
 
+import "context"
+
 // ListUsers : http handler for returning list of users
-func (u *User) List() ([]User, error) {
+func (u *User) List(ctx context.Context) ([]User, error) {
 	var list []User
 
 	const q = `SELECT id, username, password, email, is_active FROM users`
 
-	rows, err := u.Db.Query(q)
+	rows, err := u.Db.QueryContext(ctx, q)
 	if err != nil {
 		u.Log.Print(err)
 		return list, err

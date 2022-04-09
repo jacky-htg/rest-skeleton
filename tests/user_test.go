@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"os"
@@ -31,6 +32,7 @@ type User struct {
 
 //Crud : unit test  for create get and delete user function
 func (u *User) Crud(t *testing.T) {
+	ctx := context.Background()
 	u0 := models.User{
 		Username: "Aladin",
 		Email:    "aladin@gmail.com",
@@ -40,7 +42,7 @@ func (u *User) Crud(t *testing.T) {
 
 	u0.Db = u.Db
 	u0.Log = u.Log
-	err := u0.Create()
+	err := u0.Create(ctx)
 	if err != nil {
 		t.Fatalf("creating user u0: %s", err)
 	}
@@ -51,7 +53,7 @@ func (u *User) Crud(t *testing.T) {
 
 	u1.Db = u.Db
 	u1.Log = u.Log
-	err = u1.Get()
+	err = u1.Get(ctx)
 	if err != nil {
 		t.Fatalf("getting user u1: %s", err)
 	}
@@ -61,7 +63,7 @@ func (u *User) Crud(t *testing.T) {
 	}
 
 	u1.IsActive = false
-	err = u1.Update()
+	err = u1.Update(ctx)
 	if err != nil {
 		t.Fatalf("update user u1: %s", err)
 	}
@@ -72,7 +74,7 @@ func (u *User) Crud(t *testing.T) {
 
 	u2.Db = u.Db
 	u2.Log = u.Log
-	err = u2.Get()
+	err = u2.Get(ctx)
 	if err != nil {
 		t.Fatalf("getting user u2: %s", err)
 	}
@@ -81,7 +83,7 @@ func (u *User) Crud(t *testing.T) {
 		t.Fatalf("fetched != updated:\n%s", diff)
 	}
 
-	err = u2.Delete()
+	err = u2.Delete(ctx)
 	if err != nil {
 		t.Fatalf("delete user u2: %s", err)
 	}
@@ -92,7 +94,7 @@ func (u *User) Crud(t *testing.T) {
 
 	u3.Db = u.Db
 	u3.Log = u.Log
-	err = u3.Get()
+	err = u3.Get(ctx)
 
 	apiErr, ok := err.(*api.Error)
 	if !ok || apiErr.Err != sql.ErrNoRows {
@@ -102,6 +104,7 @@ func (u *User) Crud(t *testing.T) {
 
 //List : unit test for user list function
 func (u *User) List(t *testing.T) {
+	ctx := context.Background()
 	u0 := models.User{
 		Username: "Aladin",
 		Email:    "aladin@gmail.com",
@@ -112,7 +115,7 @@ func (u *User) List(t *testing.T) {
 	u0.Db = u.Db
 	u0.Log = u.Log
 
-	err := u0.Create()
+	err := u0.Create(ctx)
 	if err != nil {
 		t.Fatalf("creating user u0: %s", err)
 	}
@@ -120,7 +123,7 @@ func (u *User) List(t *testing.T) {
 	var user models.User
 	user.Db = u.Db
 	user.Log = u.Log
-	users, err := user.List()
+	users, err := user.List(ctx)
 	if err != nil {
 		t.Fatalf("listing users: %s", err)
 	}

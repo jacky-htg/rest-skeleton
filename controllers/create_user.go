@@ -12,10 +12,17 @@ import (
 
 // Create new user
 func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var userRequest request.NewUserRequest
 
-	if err := api.Decode(r, &userRequest); err != nil {
+	if err := api.Decode(r, &userRequest, false); err != nil {
 		u.Log.Printf("error decode user: %s", err)
+		api.ResponseError(w, err)
+		return
+	}
+
+	if err := userRequest.Validate(); err != nil {
+		u.Log.Printf("validate new user: %s", err)
 		api.ResponseError(w, err)
 		return
 	}
@@ -40,7 +47,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	user.Db = u.Db
 	user.Log = u.Log
 
-	if err := user.Create(); err != nil {
+	if err := user.Create(ctx); err != nil {
 		u.Log.Printf("error call create user: %s", err)
 		api.ResponseError(w, err)
 		return

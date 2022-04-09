@@ -13,6 +13,7 @@ import (
 type App struct {
 	log *log.Logger
 	mux *httprouter.Router
+	mw  []Middleware
 }
 
 // Handler type as standard http.Handle
@@ -23,6 +24,7 @@ type Ctx string
 
 // Handle associates a httprouter Handle function with an HTTP Method and URL pattern.
 func (a *App) Handle(method, url string, h Handler) {
+	h = wrapMiddleware(a.mw, h)
 
 	fn := func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		ctx := context.WithValue(r.Context(), Ctx("ps"), ps)
@@ -38,9 +40,10 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 //NewApp is function to create new App
-func NewApp(log *log.Logger) *App {
+func NewApp(log *log.Logger, mw ...Middleware) *App {
 	return &App{
 		log: log,
 		mux: httprouter.New(),
+		mw:  mw,
 	}
 }

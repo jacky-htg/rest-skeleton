@@ -1,15 +1,19 @@
 package request
 
 import (
+	"errors"
+	"rest/libraries/api"
 	"rest/models"
+
+	"gopkg.in/go-playground/validator.v9"
 )
 
 // NewUserRequest : format json request for new user
 type NewUserRequest struct {
-	Username   string `json:"username"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	RePassword string `json:"re_password"`
+	Username   string `json:"username" validate:"required"`
+	Email      string `json:"email" validate:"required"`
+	Password   string `json:"password" validate:"required"`
+	RePassword string `json:"re_password" validate:"required"`
 }
 
 // Transform NewUserRequest to User
@@ -22,9 +26,31 @@ func (u *NewUserRequest) Transform() *models.User {
 	return &user
 }
 
+// Validate NewUserRequest
+func (u *NewUserRequest) Validate() error {
+	validate := validator.New()
+
+	if err := validate.Struct(u); err != nil {
+		if _, ok := err.(*validator.InvalidValidationError); ok {
+			return err
+		}
+
+		for _, verr := range err.(validator.ValidationErrors) {
+			err = errors.New(verr.Field() + " is " + verr.Tag())
+			break
+		}
+
+		if err != nil {
+			return api.ErrBadRequest(err, err.Error())
+		}
+	}
+
+	return nil
+}
+
 type UserRequest struct {
-	ID       uint `json:"id"`
-	IsActive bool `json:"is_active"`
+	ID       uint `json:"id" validate:"required"`
+	IsActive bool `json:"is_active" validate:"required"`
 }
 
 // Transform UserRequest to User

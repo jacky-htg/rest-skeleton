@@ -12,7 +12,8 @@ import (
 
 // View user by id
 func (u *Users) View(w http.ResponseWriter, r *http.Request) {
-	paramID := r.Context().Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
+	ctx := r.Context()
+	paramID := ctx.Value(api.Ctx("ps")).(httprouter.Params).ByName("id")
 	id, err := strconv.Atoi(paramID)
 	if err != nil {
 		u.Log.Println("convert param to id", err)
@@ -24,7 +25,7 @@ func (u *Users) View(w http.ResponseWriter, r *http.Request) {
 	user.Log = u.Log
 	user.Db = u.Db
 	user.ID = uint(id)
-	err = user.Get()
+	err = user.Get(ctx)
 	if err != nil {
 		u.Log.Println("Get User", err)
 		api.ResponseError(w, err)
